@@ -1,0 +1,1 @@
+﻿global using SalesAndPurchase.Server.Domain.Entities.Base;

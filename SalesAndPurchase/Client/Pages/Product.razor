@@ -1,0 +1,45 @@
+﻿@page "/product"
+@using SalesAndPurchase.Shared
+@using SalesAndPurchase.Shared.Dtos.Response;
+@inject HttpClient Http
+
+<h3>Product</h3>
+<MudTable Items="@Products" FixedHeader="@fixed_header" FixedFooter="@fixed_footer">
+    @* <ToolBarContent>
+        <MudButton DisableElevation Variant="Variant.Filled"
+                    Class="align-self-end"
+                    Color="Color.Primary" @onclick="@(() => InvokeModal(0))"
+                    StartIcon="@Icons.Material.Filled.Add"
+                    IconColor="Color.Surface">
+             AddProduct
+         </MudButton>
+        </ToolBarContent>*@
+     <HeaderContent>
+         <MudTh>ProductName</MudTh>
+         <MudTh>Quantity</MudTh>
+         <MudTh>Price</MudTh>
+     </HeaderContent>
+     <RowTemplate>
+        @if (Products?.Count==0)
+        {
+            <div>Please Add Product</div>
+        }
+        else
+        {
+            <MudTd DataLabel="ProductName">@context.Name</MudTd>
+            <MudTd DataLabel="Quantity">@context.Stock</MudTd>
+            <MudTd DataLabel="Price">@context.Price</MudTd>
+        }
+    </RowTemplate>
+</MudTable>
+
+@code {
+    bool fixed_header = true;
+    bool fixed_footer = false;
+    List<ProductResponse> Products;
+    protected override async Task OnInitializedAsync()
+    {
+        Products = await Http.GetFromJsonAsync<List<ProductResponse>>("/api/v1/Product");
+    }
+
+}

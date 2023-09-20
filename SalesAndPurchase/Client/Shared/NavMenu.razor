@@ -1,0 +1,22 @@
+﻿<UserCard />
+
+<MudNavMenu>
+    <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
+    @* <MudNavLink Href="/counter" Icon="@Icons.Material.Filled.LibraryBooks">Counter</MudNavLink> *@
+    @* <MudNavLink Href="/fetchdata"  Icon="@Icons.Material.Filled.LibraryBooks">Fetch Data</MudNavLink> *@
+    <MudNavLink Href="/purchase"  Icon="@Icons.Material.Filled.Group">Purchase</MudNavLink>
+    <MudNavLink Href="/sales"  Icon="@Icons.Material.Filled.Group">Sales</MudNavLink>
+    <MudNavLink Href="/product"  Icon="@Icons.Material.Filled.ProductionQuantityLimits">Product</MudNavLink>
+</MudNavMenu>
+
+
+@code {
+    private bool collapseNavMenu = true;
+
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+}

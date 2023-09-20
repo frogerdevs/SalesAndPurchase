@@ -1,0 +1,153 @@
+﻿@page "/purchase"
+@using System.Collections.ObjectModel;
+@using SalesAndPurchase.Client.Components.Purchase;
+@using SalesAndPurchase.Shared.Dtos.Requests;
+@using SalesAndPurchase.Shared.Dtos.Response;
+@inject IDialogService DialogService
+@inject HttpClient Http
+
+<MudPaper Class="pa-8 ma-2">
+<h3>Purchase</h3>
+    <MudForm Model="@Model" @ref="form" @bind-IsValid="@success" @bind-Errors="@errors" Class=" gap-4">
+        <div class="d-flex flex-column gap-4">
+        @* <MudTextField T="string" Label="Username" Required="true" RequiredError="User name is required!" Variant="Variant.Outlined" /> *@
+            <MudDatePicker @bind-Date="Model.PurchaseDate" Label="Purchase Date" Placeholder="Select Date" Variant="Variant.Filled" />
+        <MudTextField @bind-Value="Model.SkuCode"
+                      For="@(() => Model.SkuCode)"
+                      Immediate="true"
+                      Label="Name" />
+        <MudSelect Margin="Margin.Dense" T="string" Label="Select Suplier" Dense="true" @bind-Value="Model.SupplierId" Variant="Variant.Outlined">
+            @foreach (var suplier in Suppliers)
+            {
+                <MudSelectItem Value="@suplier.Id">@suplier.Name</MudSelectItem>
+            }
+        </MudSelect>
+        <MudTable Items="@Model.PurchaseDetails" FixedHeader="@fixed_header" FixedFooter="@fixed_footer" >
+            <ToolBarContent>
+                <MudButton DisableElevation Variant="Variant.Filled"
+                                Class="align-self-end"
+                    Color="Color.Primary" @onclick="@(() => InvokeModal(0))" 
+                    StartIcon="@Icons.Material.Filled.Add" 
+                    IconColor="Color.Surface">
+                    AddProduct
+                </MudButton>
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>ProductName</MudTh>
+                <MudTh>Quantity</MudTh>
+                <MudTh>Price</MudTh>
+                <MudTh>Discount</MudTh>
+                <MudTh>Total</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                     @if (Model.PurchaseDetails?.Count==0)
+                    {
+                        <div>Please Add Product</div>
+                    }
+                    else
+                    {
+                        @* <MudTd DataLabel="Nr">@context.ProductId</MudTd> *@
+                        <MudTd DataLabel="ProductName">@context.ProductName</MudTd>
+                        <MudTd DataLabel="Quantity">@context.Quantity</MudTd>
+                        <MudTd DataLabel="Price">@context.Price</MudTd>
+                        <MudTd DataLabel="Discount">@context.Discount</MudTd>
+                        <MudTd DataLabel="Total">@context.Total</MudTd>
+                    }
+            </RowTemplate>
+            @*     <FooterContent>
+            <MudTd>Nr</MudTd>
+            <MudTd>Sign</MudTd>
+            <MudTd>Name</MudTd>
+            <MudTd>Position</MudTd>
+            <MudTd>Molar mass</MudTd>
+            </FooterContent> *@
+            @* <PagerContent>
+                <MudTablePager PageSizeOptions="new int[]{50, 100}" />
+            </PagerContent> *@
+        </MudTable>
+             <div class="d-flex flex-column justify-end gap-4" >
+                 <div class="align-self-end" >
+                     <MudTextField @bind-Value="@Model.SubTotal" Label="SubTotal" ReadOnly="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    <MudNumericField Immediate="true" ValueChanged="(int value) => DiscountChangeHandler(Model, value)" Value="@Model.Discount" Label="Discount" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    <MudNumericField Immediate="true" ValueChanged="(int value) => TaxChangeHandler(Model, value)" Value="@Model.Tax" Label="Tax" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                     <MudTextField @bind-Value="@Model.Total" Label="Total" ReadOnly="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                 </div>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" OnClick="@(async () => await Submit())">Order</MudButton>
+             </div>
+         </div>
+     </MudForm>
+ </MudPaper>
+
+@code {
+    bool fixed_header = true;
+    bool fixed_footer = false;
+    bool success;
+    string[] errors = { };
+    decimal SubTotal = 0;
+    MudForm form;
+    PurchaseRequest Model = new PurchaseRequest(){
+        SupplierId = "", SkuCode="", PurchaseDate = DateTime.Now,
+            PurchaseDetails = new List<PurchaseDetailRequest>()
+            {
+            }
+    };
+
+    List<SupplierResponse> Suppliers = new()
+        {
+        new SupplierResponse{ Id="1", Name="PT. Maju Jaya"},
+        new SupplierResponse{ Id="2", Name="PT. Suka Jaya"},
+        };
+    [Inject] ISnackbar Snackbar { get; set; }
+    DateTime? date = DateTime.Today;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Suppliers = await Http.GetFromJsonAsync<List<SupplierResponse>>("/api/v1/Supplier");
+    }
+    private async Task InvokeModal(int id = 0)
+    {
+        var parameters = new DialogParameters<AddProductModal>();
+
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true, DisableBackdropClick = true };
+        var dialog = DialogService.Show<AddProductModal>("AddProduct", parameters, options);
+        var result = await dialog.Result;
+        if (!result.Cancelled)
+        {
+            var dt = result.Data as PurchaseDetailRequest;
+            Model.PurchaseDetails.Add(dt);
+            // OnSearch("");
+            await SumTotal();
+        }
+    }
+    private async Task SumTotal()
+    {
+        foreach (var item in Model.PurchaseDetails)
+        {
+            Model.SubTotal += item.Total;
+            Model.Total = Model.SubTotal - (Model.SubTotal * Model.Discount / 100) - (Model.SubTotal * Model.Tax);
+        }
+    }
+    private void DiscountChangeHandler(PurchaseRequest context, int value)
+    {
+        context.Discount = value;
+        context.Total = context.SubTotal - (context.SubTotal * context.Discount / 100) + (context.SubTotal * context.Tax/100);
+    }
+    private void TaxChangeHandler(PurchaseRequest context, int value)
+    {
+        context.Tax = value;
+        context.Total = context.SubTotal - (context.SubTotal * context.Discount / 100) + (context.SubTotal * context.Tax/100);
+    }
+    private async Task Submit()
+    {
+        await form.Validate();
+
+        if (form.IsValid)
+        {
+            var response = await Http.PostAsJsonAsync("api/v1/Purchase", Model);
+            if (response.IsSuccessStatusCode)
+                Snackbar.Add("Submited!");
+            else
+                Snackbar.Add("Failed!");
+        }
+    }
+}

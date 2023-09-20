@@ -1,0 +1,77 @@
+﻿@using SalesAndPurchase.Shared.Dtos.Requests;
+@using SalesAndPurchase.Shared.Dtos.Response;
+@inject HttpClient Http
+
+@* <EditForm Model="@ItemModel" OnValidSubmit="OnValidSubmit"> *@
+    <MudDialog>
+        <DialogContent>
+            <MudForm Model="ItemModel">
+            <MudSelect Margin="Margin.Dense" T="string" Label="Select Product" @bind-Value="ItemModel.ProductId" Variant="Variant.Outlined">
+                @foreach (var product in Products)
+                {
+                    <MudSelectItem Value="@product.Id">@product.Name</MudSelectItem>
+                }
+            </MudSelect>
+            <MudNumericField Label="Quantity"
+            @bind-Value="ItemModel.Quantity" For="(() => ItemModel.Quantity)" />
+            <MudNumericField Label="Discount (%)"
+            @bind-Value="ItemModel.Discount" For="(() => ItemModel.Discount)" />
+            </MudForm>
+        </DialogContent>
+        <DialogActions>
+            <MudButton OnClick="Cancel">Cancel</MudButton>
+            <MudButton Color="Color.Success" Variant="Variant.Filled" OnClick="Submit">Add</MudButton>
+        </DialogActions>
+    </MudDialog>
+@* </EditForm> *@
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    PurchaseDetailRequest ItemModel = new PurchaseDetailRequest(){ProductId = ""};
+    List<ProductResponse> Products = new List<ProductResponse>()
+    {
+        // new ProductResponse{Id = "1", Name="Anting", Price=20000, Stock=100, Active=true},
+        // new ProductResponse{Id = "2", Name="Gelang", Price=30000, Stock=200, Active=true},
+        // new ProductResponse{Id = "3", Name="Mutiara", Price=30000, Stock=200, Active=true}
+    };
+    protected override async Task OnInitializedAsync()
+    {
+        Products = await Http.GetFromJsonAsync<List<ProductResponse>>("/api/v1/Product");
+
+    }
+    // private Task SaveAsync()
+    // {
+    //     MudDialog.Close(DialogResult.Ok(ItemModel));
+    //     // var response = await ProductManager.SaveAsync(AddEditProductModel);
+    //     // if (response.Succeeded)
+    //     // {
+    //     //     _snackBar.Add(response.Messages[0], Severity.Success);
+    //     //     await HubConnection.SendAsync(ApplicationConstants.SignalR.SendUpdateDashboard);
+    //     //     MudDialog.Close();
+    //     // }
+    //     // else
+    //     // {
+    //     //     foreach (var message in response.Messages)
+    //     //     {
+    //     //         _snackBar.Add(message, Severity.Error);
+    //     //     }
+    //     // }
+    // }
+    private void OnValidSubmit(EditContext context)
+    {
+        MudDialog.Close(DialogResult.Ok(ItemModel));
+
+        // success = true;
+        StateHasChanged();
+    }
+    void Submit() {
+        var prd = Products.FirstOrDefault(c => c.Id == ItemModel.ProductId);
+        ItemModel.ProductName = prd.Name;
+        ItemModel.Price = prd.Price;
+        MudDialog.Close(DialogResult.Ok(ItemModel));
+    }
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+}

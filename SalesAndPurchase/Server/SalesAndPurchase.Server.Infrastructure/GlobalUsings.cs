@@ -1,0 +1,13 @@
+﻿global using Microsoft.AspNetCore.Builder;
+global using Microsoft.EntityFrameworkCore;
+global using Microsoft.EntityFrameworkCore.Metadata.Builders;
+global using Microsoft.Extensions.DependencyInjection;
+global using SalesAndPurchase.Server.Application.Configs;
+global using SalesAndPurchase.Server.Application.Interfaces.Repositories.Base;
+global using SalesAndPurchase.Server.Application.Interfaces.UnitOfWorks;
+global using SalesAndPurchase.Server.Domain.Entities;
+global using SalesAndPurchase.Server.Domain.Entities.Base;
+global using SalesAndPurchase.Server.Infrastructure.Data;
+global using SalesAndPurchase.Server.Infrastructure.Data.Mappings;
+global using SalesAndPurchase.Server.Infrastructure.Repositories.Base;
+global using System.Collections;

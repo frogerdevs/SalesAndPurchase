@@ -30,7 +30,8 @@
                 Price=items.Price,
                 Stock=items.Stock,
                 Active=items.Active,
-                CategoryId=items.CategoryId
+                CategoryId=items.CategoryId,
+                SellPrice = items.SellPrice
             } : null;
         }
     }

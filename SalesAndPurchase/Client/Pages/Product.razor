@@ -15,9 +15,10 @@
          </MudButton>
         </ToolBarContent>*@
      <HeaderContent>
-         <MudTh>ProductName</MudTh>
+         <MudTh>Product Name</MudTh>
          <MudTh>Quantity</MudTh>
          <MudTh>Price</MudTh>
+         <MudTh>Sell Price</MudTh>
      </HeaderContent>
      <RowTemplate>
         @if (Products?.Count==0)
@@ -29,6 +30,7 @@
             <MudTd DataLabel="ProductName">@context.Name</MudTd>
             <MudTd DataLabel="Quantity">@context.Stock</MudTd>
             <MudTd DataLabel="Price">@context.Price</MudTd>
+            <MudTd DataLabel="SellPrice">@context.SellPrice</MudTd>
         }
     </RowTemplate>
 </MudTable>

@@ -26,17 +26,13 @@
 @* </EditForm> *@
 @code {
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
-
-    PurchaseDetailRequest ItemModel = new PurchaseDetailRequest(){ProductId = ""};
-    List<ProductResponse> Products = new List<ProductResponse>()
-    {
-        // new ProductResponse{Id = "1", Name="Anting", Price=20000, Stock=100, Active=true},
-        // new ProductResponse{Id = "2", Name="Gelang", Price=30000, Stock=200, Active=true},
-        // new ProductResponse{Id = "3", Name="Mutiara", Price=30000, Stock=200, Active=true}
-    };
+    [Parameter]
+    public string ParentForm { get; set; } = "purchase";
+    TransactionProductItem ItemModel = new TransactionProductItem();
+    List<ProductResponse> Products = new List<ProductResponse>();
     protected override async Task OnInitializedAsync()
     {
-        Products = await Http.GetFromJsonAsync<List<ProductResponse>>("/api/v1/Product");
+        Products = await Http.GetFromJsonAsync<List<ProductResponse>>("/api/v1/Product")??new List<ProductResponse>();
 
     }
     // private Task SaveAsync()
@@ -67,7 +63,7 @@
     void Submit() {
         var prd = Products.FirstOrDefault(c => c.Id == ItemModel.ProductId);
         ItemModel.ProductName = prd.Name;
-        ItemModel.Price = prd.Price;
+        ItemModel.Price = ParentForm == "purchase" ? prd.Price : prd.SellPrice;
         MudDialog.Close(DialogResult.Ok(ItemModel));
     }
     private void Cancel()

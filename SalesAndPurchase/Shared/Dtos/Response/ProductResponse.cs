@@ -9,5 +9,6 @@
         public int Stock { get; set; }
         public bool Active { get; set; }
         public string? CategoryId { get; set; }
+        public decimal SellPrice { get; set; }
     }
 }

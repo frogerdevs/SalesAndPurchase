@@ -9,7 +9,7 @@
         public bool Active { get; set; }
         public string CategoryId { get; set; }
         public string? ImageUrl { get; set; }
-
+        public decimal SellPrice { get; set; }
     }
     public class PutProductRequest : ProductRequest
     {

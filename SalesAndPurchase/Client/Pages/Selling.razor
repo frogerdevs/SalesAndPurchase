@@ -73,13 +73,7 @@
     string[] errors = { };
     decimal SubTotal = 0;
     MudForm form;
-    SellRequest Model = new SellRequest()
-        {
-            SupplierId = "",
-            SkuCode="",
-            SalesDate = DateTime.Now,
-            SellDetails = new List<SellDetailRequest>()
-        };
+    SellRequest Model;
 
     List<CustomerResponse>? Customers = new();
     [Inject] ISnackbar Snackbar { get; set; }
@@ -88,29 +82,38 @@
 
     protected override async Task OnInitializedAsync()
     {
+        Model = new SellRequest()
+            {
+                SupplierId = "",
+                SalesDate = DateTime.Now,
+
+            };
         Customers = await Http.GetFromJsonAsync<List<CustomerResponse>>("/api/v1/Customer");
     }
     private async Task InvokeModal(int id = 0)
     {
-        var parameters = new DialogParameters<AddProductModal>();
+        var parameters = new DialogParameters<AddProductModal>() { ["ParentForm"] = "selling" };
 
         var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true, DisableBackdropClick = true };
         var dialog = DialogService.Show<AddProductModal>("AddProduct", parameters, options);
         var result = await dialog.Result;
         if (!result.Cancelled)
         {
-            var dt = result.Data as PurchaseDetailRequest;
-            var item = new SellDetailRequest
-                {
-                    ProductId = dt.ProductId,
-                    Quantity = dt.Quantity,
-                    Price = dt.Price,
-                    ProductName = dt.ProductName,
-                    Discount = dt.Discount
-                };
-            Model.SellDetails.Add(item);
-            // OnSearch("");
-            SumTotal();
+            var prodItem = result.Data as TransactionProductItem;
+            if (prodItem != null)
+            {
+
+                Model.SellDetails?.Add(new SellDetailRequest
+                    {
+                        ProductId = prodItem.ProductId,
+                        ProductName = prodItem.ProductName,
+                        Price = prodItem.Price,
+                        Discount = prodItem.Discount,
+                        Quantity = prodItem.Quantity,
+                    });
+                // OnSearch("");
+                await SumTotal();
+            }
         }
     }
     private async Task SumTotal()

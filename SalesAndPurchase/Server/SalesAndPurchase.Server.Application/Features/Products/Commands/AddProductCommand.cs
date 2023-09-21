@@ -42,7 +42,8 @@
                 Price=res.Price,
                 Stock=res.Stock,
                 Active=res.Active,
-                CategoryId=res.CategoryId
+                CategoryId=res.CategoryId,
+                SellPrice = res.SellPrice
             });
         }
 
@@ -56,7 +57,8 @@
                 Stock=command.Stock,
                 Active=command.Active,
                 CategoryId=command.CategoryId,
-                ImageUrl=command.ImageUrl
+                ImageUrl=command.ImageUrl,
+                SellPrice = command.SellPrice
             };
         }
     }

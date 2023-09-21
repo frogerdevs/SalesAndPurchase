@@ -23,6 +23,7 @@
                 Price = i.Price,
                 Stock = i.Stock,
                 Active = i.Active,
+                SellPrice = i.SellPrice
             }).ToListAsync(cancellationToken);
 
             return items;

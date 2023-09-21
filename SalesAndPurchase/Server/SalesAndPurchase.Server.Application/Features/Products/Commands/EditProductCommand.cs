@@ -30,6 +30,7 @@
                     entity.Stock = command.Stock;
                     entity.Active = command.Active;
                     entity.ImageUrl=command.ImageUrl;
+                    entity.SellPrice = command.SellPrice;
 
                     var res = await _repo.UpdateAsync(entity, command.Id, cancellationToken);
                     await _genericUnitOfWork.Commit(cancellationToken);
@@ -54,7 +55,8 @@
                 Price=res.Price,
                 Stock=res.Stock,
                 Active=res.Active,
-                CategoryId=res.CategoryId
+                CategoryId=res.CategoryId,
+                SellPrice = res.SellPrice
             });
         }
     }

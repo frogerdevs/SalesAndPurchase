@@ -85,46 +85,51 @@
     string[] errors = { };
     decimal SubTotal = 0;
     MudForm form;
-    PurchaseRequest Model = new PurchaseRequest(){
-        SupplierId = "", SkuCode="", PurchaseDate = DateTime.Now,
-            PurchaseDetails = new List<PurchaseDetailRequest>()
-            {
-            }
-    };
-
-    List<SupplierResponse> Suppliers = new()
-        {
-        new SupplierResponse{ Id="1", Name="PT. Maju Jaya"},
-        new SupplierResponse{ Id="2", Name="PT. Suka Jaya"},
-        };
+    PurchaseRequest Model;
+    List<SupplierResponse> Suppliers = new();
     [Inject] ISnackbar Snackbar { get; set; }
     DateTime? date = DateTime.Today;
 
     protected override async Task OnInitializedAsync()
     {
-        Suppliers = await Http.GetFromJsonAsync<List<SupplierResponse>>("/api/v1/Supplier");
+        Model = new PurchaseRequest(){SupplierId = ""};
+        Suppliers = await Http.GetFromJsonAsync<List<SupplierResponse>>("/api/v1/Supplier")?? new List<SupplierResponse>();
     }
     private async Task InvokeModal(int id = 0)
     {
-        var parameters = new DialogParameters<AddProductModal>();
+        var parameters = new DialogParameters<AddProductModal>() { ["ParentForm"] = "purchase" };
 
         var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true, DisableBackdropClick = true };
         var dialog = DialogService.Show<AddProductModal>("AddProduct", parameters, options);
         var result = await dialog.Result;
-        if (!result.Cancelled)
+        if (!result.Canceled)
         {
-            var dt = result.Data as PurchaseDetailRequest;
-            Model.PurchaseDetails.Add(dt);
-            // OnSearch("");
-            await SumTotal();
+            var prodItem = result.Data as TransactionProductItem;
+            if (prodItem != null)
+            {
+
+                Model.PurchaseDetails?.Add(new PurchaseDetailRequest
+                {
+                    ProductId = prodItem.ProductId,
+                    ProductName = prodItem.ProductName,
+                    Price = prodItem.Price,
+                    Discount = prodItem.Discount,
+                    Quantity = prodItem.Quantity,
+                });
+                // OnSearch("");
+                await SumTotal();
+            }
         }
     }
     private async Task SumTotal()
     {
-        foreach (var item in Model.PurchaseDetails)
+        if (Model.PurchaseDetails != null)
         {
-            Model.SubTotal += item.Total;
-            Model.Total = Model.SubTotal - (Model.SubTotal * Model.Discount / 100) - (Model.SubTotal * Model.Tax);
+            foreach (var item in Model.PurchaseDetails)
+            {
+                Model.SubTotal += item.Total;
+                Model.Total = Model.SubTotal - (Model.SubTotal * Model.Discount / 100) - (Model.SubTotal * Model.Tax);
+            }
         }
     }
     private void DiscountChangeHandler(PurchaseRequest context, int value)

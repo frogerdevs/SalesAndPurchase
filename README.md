@@ -20,11 +20,12 @@ Feature:
 - Customer
 - Purchase (will add product stock)
 - Sales (will reduce product stock)
+  
 Todo:
 - Payment
 - debt
 - receivables
-- Reporting
+- Reporting (https://github.com/frogerdevs/SalesAndPurchase/blob/master/SQL/SP_Stock_Product_ByDate.sql)
 
 ScreenShoot:
 ![Produk](https://github.com/frogerdevs/SalesAndPurchase/assets/38326221/bab3b3f2-cd30-4fd2-bbc3-0c33612074c2)

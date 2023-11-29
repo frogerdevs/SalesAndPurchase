@@ -1,0 +1,102 @@
+=====run postgreSql=====
+docker run --name my-postgres -p 5432:5432 -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=1234 -d postgres
+=====run SQL Server=====
+docker run --name sqlserver -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=P@ssw0rd" -p 1433:1433 -d mcr.microsoft.com/mssql/server:2022-latest
+
+Server=localhost,1433; Database=master; User Id=sa; Password=P@ssw0rd; Trusted_Connection=False; MultipleActiveResultSets=true; Trusted_Connection=True; TrustServerCertificate=True;
+=====run ngrok=====
+ docker run -it -e NGROK_AUTHTOKEN=<token> ngrok/ngrok http 80
+ 
+=====Password=====
+tenant2
+admin@tenant2.com
+123Qwe*
+=====Run FE=====
+yarn start auth
+yarn nx start:cloud portal
+
+=====clone repo=====
+https://dhigroup.visualstudio.com/DHI-DK-WRD/_git/wrd-main-portal
+knwa
+7ieermnpuaafmlru4nvq75txh3dgbc4zja6c3swdaxidhohlvoaq
+
+==================================================
+======================DOCKER======================
+==================================================
+---get list images---
+docker images
+docker ps
+-----get ip docker-----
+docker inspect my-postgres
+
+-----connection string access db di docer-----
+"Default": "host=172.17.0.2;Port=5432;database=wrdportaldb_start;Username=postgres;Password=1234; Include Error Detail=true;"
+---Env---
+ConnectionStrings__Default : host=172.17.0.2;Port=5432;database=wrdportaldb_start;Username=postgres;Password=1234; Include Error Detail=true;
+
+--------masuk kedalam docker menggunakan terminal-----
+docker exec -it WaterDssPortal.Web.Host /bin/bash
+docker exec -it cbcb /bin/bash
+
+=====Push Docker to Docker Hub=====
+
+-----build docker------
+cd C:\DataKantor\Repos\waterdss-portal\backend\aspnet-core
+docker build -f .\src\WaterDssPortal.Web.Host\Dockerfile . --force-rm -t waterdssportalwebhost:dev
+
+---login & put password---
+docker login -u knwa
+
+
+---tag image kedalam user tag docker hub---
+docker tag waterdssportalwebhost:dev knwa/waterdssportal:dev
+---push ke dockher hub---
+docker push knwa/waterdssportal:dev
+
+docker run --name hubknwaportal -e "ConnectionStrings_Default=host=172.17.0.2;Port=5432;database=wrdportaldb_start;Username=postgres;Password=1234; Include Error Detail=true;" -p 327447:433 -d knwa/waterdssportal:dev
+
+
+---docker run from visual studio---
+docker run --name myportaltest -p 7443:443 -e "ASPNETCORE_ENVIRONMENT=Development" -e "ASPNETCORE_URLS=https://+:443;http://+:80" -P -w "/app" -d waterdssportalwebhost:dev  
+docker run -dt -v "C:\Users\knwa\vsdbg\vs2017u5:/remote_debugger:rw" -v "C:\Users\knwa\AppData\Roaming\Microsoft\UserSecrets:/root/.microsoft/usersecrets:ro" -v "C:\Users\knwa\AppData\Roaming\Microsoft\UserSecrets:/home/app/.microsoft/usersecrets:ro" -v "C:\Users\knwa\AppData\Roaming\ASP.NET\Https:/root/.aspnet/https:ro" -v "C:\Users\knwa\AppData\Roaming\ASP.NET\Https:/home/app/.aspnet/https:ro" -v "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Sdks\Microsoft.Docker.Sdk\tools\TokenService.Proxy\linux-x64\net7.0:/TokenService.Proxy:ro" -v "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Sdks\Microsoft.Docker.Sdk\tools\HotReloadProxy\linux-x64\net7.0:/HotReloadProxy:ro" -v "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\CommonExtensions\Microsoft\HotReload:/HotReloadAgent:ro" -v "C:\DataKantor\Repos\waterdss-portal\backend\aspnet-core\src\WaterDssPortal.Web.Host:/app" -v "C:\DataKantor\Repos\waterdss-portal\backend\aspnet-core:/src/" -v "C:\Users\knwa\.nuget\packages\:/.nuget/fallbackpackages2" -v "C:\Program Files (x86)\Microsoft Visual Studio\Shared\NuGetPackages:/.nuget/fallbackpackages" -e "ASPNETCORE_LOGGING__CONSOLE__DISABLECOLORS=true" -e "ASPNETCORE_ENVIRONMENT=Development" -e "ASPNETCORE_URLS=https://+:443;http://+:80" -e "DOTNET_USE_POLLING_FILE_WATCHER=1" -e "NUGET_PACKAGES=/.nuget/fallbackpackages2" -e "NUGET_FALLBACK_PACKAGES=/.nuget/fallbackpackages;/.nuget/fallbackpackages2" -P --name WaterDssPortal.Web.Host --entrypoint tail waterdssportalwebhost:dev -f /dev/null 
+6b29a5409c22cbcc5dd735869eb7456facfa031854f7359484c9ae576c5e32ca
+
+
+====cara build docker images =====
+-----generate certificate agar bisa trust https dari host nya-----
+dotnet dev-certs https -ep $env:USERPROFILE\.aspnet\https\aspnetapp.pfx -p P@ssw0rd
+dotnet dev-certs https --trust
+
+-----build & run docker di local------
+cd C:\DataKantor\Repos\waterdss-portal\backend\aspnet-core
+docker build -f .\src\WaterDssPortal.Web.Host\Dockerfile . --force-rm -t myportalimage:dev
+docker run `
+  --name myportaltest `
+  -p 9443:443 -p 8000:80 `
+  -e "ASPNETCORE_ENVIRONMENT=Development" `
+  -e "ASPNETCORE_URLS=https://+:443;http://+:80" `
+  -e "ASPNETCORE_Kestrel__Certificates__Default__Password=P@ssw0rd" `
+  -e "ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx" `
+  -e "ConnectionStrings__Default=Host=172.17.0.2;Port=5432;Username=postgres;Password=1234;Database=docker_wrdportaldb;Include Error Detail=true;" `
+  -e "SECURITY_KEY=coba_portal_krisna" `
+  -e "Authentication__OpenId__ValidateIssuer=true" `
+  -e "Authentication__OpenId__Scope=openid offline_access" `
+  -e "Authentication__OpenId__ResponseType=code" `
+  -e "Authentication__OpenId__IsEnabled=true" `
+  -e "Authentication__OpenId__ClientSecret=" `
+  -e "Authentication__OpenId__ClientId=LocalWaterToolsPortalHttp" `
+  -e "Authentication__OpenId__CallbackPath=/authentication/callback" `
+  -e "Authentication__OpenId__Authority=https://login.mike-cloud-dev.com" `
+  -e "Authentication__JwtBearer__SecurityKey=coba_portal_krisna" `
+  -e "Authentication__JwtBearer__Issuer=WaterDssPortal" `
+  -e "Authentication__JwtBearer__IsEnabled=true" `
+  -e "Authentication__JwtBearer__Audience=WaterDssPortal" `
+  -e "App__WebUrl=https://waterdss-wrd-dev.eu.mike-cloud-dev.com" `
+  -e "App__CorsOrigins=http://localhost:4200,http://localhost:8080,http://localhost:8081,http://localhost:3000,https://localhost:3000,https://localhost:3001,http://localhost:3002/" `
+  -v ${env:USERPROFILE}\.aspnet\https:/https/ `
+  -P -w "/app"`
+  -d myportalimage:dev
+
+==================================================
+==================================================
+==================================================

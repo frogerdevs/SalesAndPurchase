@@ -68,8 +68,10 @@ dotnet dev-certs https -ep $env:USERPROFILE\.aspnet\https\aspnetapp.pfx -p P@ssw
 dotnet dev-certs https --trust
 
 -----build & run docker di local------
+
 cd C:\DataKantor\Repos\waterdss-portal\backend\aspnet-core
 docker build -f .\src\WaterDssPortal.Web.Host\Dockerfile . --force-rm -t myportalimage:dev
+(--windows--)
 docker run `
   --name myportaltest `
   -p 9443:443 -p 8000:80 `
@@ -95,6 +97,34 @@ docker run `
   -e "App__CorsOrigins=http://localhost:4200,http://localhost:8080,http://localhost:8081,http://localhost:3000,https://localhost:3000,https://localhost:3001,http://localhost:3002/" `
   -v ${env:USERPROFILE}\.aspnet\https:/https/ `
   -P -w "/app"`
+  -d myportalimage:dev
+
+(--Ubuntu--)
+docker run \
+  --name myportaltest \
+  -p 9443:443 -p 8000:80 \
+  -e "ASPNETCORE_ENVIRONMENT=Development" \
+  -e "ASPNETCORE_URLS=https://+:443;http://+:80" \
+  -e "ASPNETCORE_Kestrel__Certificates__Default__Password=P@ssw0rd" \
+  -e "ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx" \
+  -e "ConnectionStrings__Default=Host=172.17.0.2;Port=5432;Username=postgres;Password=1234;Database=docker_wrdportaldb;Include Error Detail=true;" \
+  -e "SECURITY_KEY=coba_portal_krisna" \
+  -e "Authentication__OpenId__ValidateIssuer=true" \
+  -e "Authentication__OpenId__Scope=openid offline_access" \
+  -e "Authentication__OpenId__ResponseType=code" \
+  -e "Authentication__OpenId__IsEnabled=true" \
+  -e "Authentication__OpenId__ClientSecret=" \
+  -e "Authentication__OpenId__ClientId=LocalWaterToolsPortalHttp" \
+  -e "Authentication__OpenId__CallbackPath=/authentication/callback" \
+  -e "Authentication__OpenId__Authority=https://login.mike-cloud-dev.com" \
+  -e "Authentication__JwtBearer__SecurityKey=coba_portal_krisna" \
+  -e "Authentication__JwtBearer__Issuer=WaterDssPortal" \
+  -e "Authentication__JwtBearer__IsEnabled=true" \
+  -e "Authentication__JwtBearer__Audience=WaterDssPortal" \
+  -e "App__WebUrl=https://waterdss-wrd-dev.eu.mike-cloud-dev.com" \
+  -e "App__CorsOrigins=http://localhost:4200,http://localhost:8080,http://localhost:8081,http://localhost:3000,https://localhost:3000,https://localhost:3001,http://localhost:3002/" \
+  -v $HOME/.aspnet/https:/https/ \
+  -P -w "/app" \
   -d myportalimage:dev
 
 ==================================================
